@@ -25,7 +25,7 @@ jobs:
 
       - name: Validate templates
         run: |
-          sam validate
+          sam validate -t templates/pipelines.yaml
           cfn-lint templates/*.yaml
 
       - name: Configure AWS credentials
@@ -35,7 +35,11 @@ jobs:
           aws-region: us-east-1
 
       - name: SAM Build
-        run: sam build
+        run: sam build -t templates/pipelines.yaml
 
       - name: SAM Deploy STG
-        run: sam deploy --config-file config/samconfig-stg.toml --config-env stg --no-confirm-changeset --no-fail-on-empty-changeset
+        run: sam deploy -t templates/pipelines.yaml \
+            --config-file config/samconfig-stg.toml \
+            --config-env stg \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
