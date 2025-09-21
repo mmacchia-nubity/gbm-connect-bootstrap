@@ -1,0 +1,16 @@
+version = 0.1
+
+[default.deploy.parameters]
+region = "us-east-1"
+capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
+confirm_changeset = true
+resolve_s3 = true
+
+[prd.deploy.parameters]
+stack_name = "gbm-connect-bootstrap-prd"
+s3_bucket = "gbm-connect-sam-artifacts-prd"
+parameter_overrides = [
+  "Environment=prd",
+  "PipelineRoleArn=arn:aws:iam::825765398662:role/gbm-connect-pipeline-prd-role",
+  "BuildRoleArn=arn:aws:iam::825765398662:role/gbm-connect-build-prd-role"
+]

@@ -1,0 +1,41 @@
+name: Deploy Bootstrap STG
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install aws-sam-cli cfn-lint
+
+      - name: Validate templates
+        run: |
+          sam validate
+          cfn-lint templates/*.yaml
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::825765398662:role/gbm-connect-bootstrap-oidc-role
+          aws-region: us-east-1
+
+      - name: SAM Build
+        run: sam build
+
+      - name: SAM Deploy STG
+        run: sam deploy --config-file config/samconfig-stg.toml --config-env stg --no-confirm-changeset --no-fail-on-empty-changeset
