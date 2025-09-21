@@ -9,6 +9,7 @@ resolve_s3 = true
 [stg.deploy.parameters]
 stack_name = "gbm-connect-bootstrap-stg"
 s3_bucket = "gbm-connect-sam-artifacts-stg"
+capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
 parameter_overrides = [
   "Environment=stg",
   "PipelineRoleArn=arn:aws:iam::825765398662:role/gbm-connect-pipeline-stg-role",
