@@ -60,6 +60,8 @@ jobs:
             --stack-name gbm-connect-pipeline-stg \
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
+              GitHubOwner=mmacchia-nubity \
+              GitHubRepo=gbm-connect-bootstrap \
               Environment=stg \
               ArtifactsBucket=gbm-connect-artifacts-stg \
               PipelineRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-pipeline-stg-role \
@@ -99,6 +101,8 @@ jobs:
             --stack-name gbm-connect-pipeline-prd \
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
+              GitHubOwner=mmacchia-nubity \
+              GitHubRepo=gbm-connect-bootstrap \
               Environment=prd \
               ArtifactsBucket=gbm-connect-artifacts-prd \
               PipelineRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-pipeline-prd-role \

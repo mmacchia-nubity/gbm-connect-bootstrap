@@ -4,11 +4,11 @@ Description: CI/CD Pipeline for GBM Connect - Production
 Parameters:
   GitHubOwner:
     Type: String
-    Default: "gbmcode"
+    Default: "mmacchia-nubity"
 
   GitHubRepo:
     Type: String
-    Default: "gbm-connect"
+    Default: "gbm-connect-bootstrap"
 
   PipelineRoleArn:
     Type: String
