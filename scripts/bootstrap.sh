@@ -31,6 +31,6 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameter-overrides \
     Environment=$ENVIRONMENT \
-    ArtifactsBucket=gbm-connect-artifacts-$ENVIRONMENT-$(aws sts get-caller-identity --query Account --output text) \
+    ArtifactsBucket=gbm-connect-artifacts-$ENVIRONMENT \
     PipelineRoleArn=arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/gbm-connect-pipeline-$ENVIRONMENT-role \
     BuildRoleArn=arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/gbm-connect-build-$ENVIRONMENT-role
