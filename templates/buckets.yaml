@@ -1,11 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: S3 Buckets for GBM Connect CI/CD Pipelines
+Description: S3 Buckets for CodePipeline Artifacts
 
 Parameters:
   Environment:
     Type: String
     AllowedValues: [stg, prd]
-    Description: Environment name (stg or prd)
 
 Resources:
   ArtifactBucket:
@@ -14,16 +13,13 @@ Resources:
       BucketName: !Sub "gbm-connect-artifacts-${Environment}"
       VersioningConfiguration:
         Status: Enabled
-      Encryption:
-        BucketKeyEnabled: true
+      BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
 
-
 Outputs:
   ArtifactBucketName:
-    Description: Name of the S3 bucket for pipeline artifacts
     Value: !Ref ArtifactBucket
     Export:
-      Name: !Sub "${AWS::StackName}-ArtifactBucketName"
+      Name: !Sub "gbm-connect-artifacts-${Environment}-name"
