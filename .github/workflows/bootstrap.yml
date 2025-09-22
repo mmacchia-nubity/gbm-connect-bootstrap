@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCOUNT_ID: "825765398662"
+
 jobs:
   validate:
     name: Validate templates
@@ -37,15 +41,16 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::825765398662:role/gbm-connect-bootstrap-oidc-role
-          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-bootstrap-oidc-role
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy buckets
         run: |
           aws cloudformation deploy \
             --template-file templates/buckets.yaml \
             --stack-name gbm-connect-buckets-stg \
-            --capabilities CAPABILITY_NAMED_IAM
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameter-overrides Environment=stg
 
       - name: Deploy pipeline STG
         run: |
@@ -56,9 +61,9 @@ jobs:
             --parameter-overrides \
               Environment=stg \
               ArtifactsBucket=gbm-connect-artifacts-stg \
-              PipelineRoleArn=arn:aws:iam::825765398662:role/gbm-connect-pipeline-stg-role \
-              BuildRoleArn=arn:aws:iam::825765398662:role/gbm-connect-build-stg-role \
-              ReleaseRoleArn=arn:aws:iam::825765398662:role/gbm-connect-release-role
+              PipelineRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-pipeline-stg-role \
+              BuildRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-build-stg-role \
+              ReleaseRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-release-role
 
   deploy-prd:
     name: Deploy PRD
@@ -75,15 +80,16 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::825765398662:role/gbm-connect-bootstrap-oidc-role
-          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-bootstrap-oidc-role
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy buckets
         run: |
           aws cloudformation deploy \
             --template-file templates/buckets.yaml \
             --stack-name gbm-connect-buckets-prd \
-            --capabilities CAPABILITY_NAMED_IAM
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameter-overrides Environment=prd
 
       - name: Deploy pipeline PRD
         run: |
@@ -94,5 +100,5 @@ jobs:
             --parameter-overrides \
               Environment=prd \
               ArtifactsBucket=gbm-connect-artifacts-prd \
-              PipelineRoleArn=arn:aws:iam::825765398662:role/gbm-connect-pipeline-prd-role \
-              BuildRoleArn=arn:aws:iam::825765398662:role/gbm-connect-build-prd-role
+              PipelineRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-pipeline-prd-role \
+              BuildRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-build-prd-role

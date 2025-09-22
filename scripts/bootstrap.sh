@@ -22,7 +22,8 @@ echo "🚀 Starting bootstrap for $ENVIRONMENT environment..."
 aws cloudformation deploy \
   --template-file templates/buckets.yaml \
   --stack-name gbm-connect-buckets-$ENVIRONMENT \
-  --capabilities CAPABILITY_NAMED_IAM
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides Environment=$ENVIRONMENT
 
 # Deploy pipeline
 aws cloudformation deploy \
