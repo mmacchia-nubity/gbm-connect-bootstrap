@@ -1,33 +1,29 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: S3 Buckets for GBM Connect artifacts
+Description: S3 Buckets for GBM Connect CI/CD Pipelines
 
 Parameters:
   Environment:
     Type: String
     AllowedValues: [stg, prd]
-    Description: Environment name
+    Description: Environment name (stg or prd)
 
 Resources:
-  ArtifactsBucket:
+  ArtifactBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "gbm-connect-artifacts-${Environment}"
       VersioningConfiguration:
         Status: Enabled
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      LifecycleConfiguration:
-        Rules:
-          - Id: DeleteOldVersions
-            Status: Enabled
-            NoncurrentVersionExpirationInDays: 30
+      Encryption:
+        BucketKeyEnabled: true
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
 
 Outputs:
-  BucketName:
-    Description: Artifacts bucket name
-    Value: !Ref ArtifactsBucket
+  ArtifactBucketName:
+    Description: Name of the S3 bucket for pipeline artifacts
+    Value: !Ref ArtifactBucket
     Export:
-      Name: !Sub "${AWS::StackName}-ArtifactsBucket"
+      Name: !Sub "${AWS::StackName}-ArtifactBucketName"

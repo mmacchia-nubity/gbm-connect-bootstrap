@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CI/CD Pipeline for GBM Connect - Production
+
+Parameters:
+  GitHubOwner:
+    Type: String
+    Default: "gbmcode"
+
+  GitHubRepo:
+    Type: String
+    Default: "gbm-connect"
+
+  PipelineRoleArn:
+    Type: String
+    Description: ARN of the CodePipeline service role
+
+  BuildRoleArn:
+    Type: String
+    Description: ARN of the CodeBuild service role
+
+  ArtifactsBucket:
+    Type: String
+    Description: S3 bucket for pipeline artifacts
+
+Resources:
+  GBMConnectCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: gbm-connect-codebuild-prd
+      ServiceRole: !Ref BuildRoleArn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: STAGE
+            Value: prd
+          - Name: ACCOUNT
+            Value: !Ref AWS::AccountId
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yml
+      TimeoutInMinutes: 30
+
+  GBMConnectPipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: gbm-connect-pipeline-prd
+      RoleArn: !Ref PipelineRoleArn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactsBucket
+      Stages:
+        - Name: source
+          Actions:
+            - Name: source-gbm-connect
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: '1'
+                Provider: GitHub
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Repo: !Ref GitHubRepo
+                Branch: "refs/tags/*"
+                OAuthToken: "{{resolve:secretsmanager:github/token:SecretString:token}}"
+                PollForSourceChanges: false
+              OutputArtifacts:
+                - Name: SourceGBMConnect
+        - Name: deploy
+          Actions:
+            - Name: deploy-gbm-connect
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: '1'
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref GBMConnectCodeBuildProject
+              InputArtifacts:
+                - Name: SourceGBMConnect
+
+  GBMConnectWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: "{{resolve:secretsmanager:github/token:SecretString:token}}"
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: "refs/tags/*"
+      TargetPipeline: !Ref GBMConnectPipeline
+      TargetAction: source-gbm-connect
+      TargetPipelineVersion: !GetAtt GBMConnectPipeline.Version
+      RegisterWithThirdParty: true

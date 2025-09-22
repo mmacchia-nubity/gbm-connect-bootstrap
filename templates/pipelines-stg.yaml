@@ -1,0 +1,124 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CI/CD Pipeline for GBM Connect - Staging
+
+Parameters:
+  GitHubOwner:
+    Type: String
+    Default: "gbmcode"
+
+  GitHubRepo:
+    Type: String
+    Default: "gbm-connect"
+
+  PipelineRoleArn:
+    Type: String
+    Description: ARN of the CodePipeline service role
+
+  BuildRoleArn:
+    Type: String
+    Description: ARN of the CodeBuild service role
+
+  ReleaseRoleArn:
+    Type: String
+    Description: ARN of the CodeBuild release role
+
+  ArtifactsBucket:
+    Type: String
+    Description: S3 bucket for pipeline artifacts
+
+Resources:
+  GBMConnectCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: gbm-connect-codebuild-stg
+      ServiceRole: !Ref BuildRoleArn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: STAGE
+            Value: stg
+          - Name: ACCOUNT
+            Value: !Ref AWS::AccountId
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yml
+      TimeoutInMinutes: 30
+
+  GBMConnectReleaseProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: gbm-connect-release-stg
+      ServiceRole: !Ref ReleaseRoleArn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec-create-tag.yml
+
+  GBMConnectPipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: gbm-connect-pipeline-stg
+      RoleArn: !Ref PipelineRoleArn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactsBucket
+      Stages:
+        - Name: source
+          Actions:
+            - Name: source-gbm-connect
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: '1'
+                Provider: GitHub
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Repo: !Ref GitHubRepo
+                Branch: master
+                OAuthToken: "{{resolve:secretsmanager:github/token:SecretString:token}}"
+              OutputArtifacts:
+                - Name: SourceGBMConnect
+        - Name: deploy
+          Actions:
+            - Name: deploy-gbm-connect
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: '1'
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref GBMConnectCodeBuildProject
+              InputArtifacts:
+                - Name: SourceGBMConnect
+        - Name: approval
+          Actions:
+            - Name: manual-approval
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: '1'
+                Provider: Manual
+              Configuration:
+                CustomData: "Approve to create release"
+        - Name: release
+          Actions:
+            - Name: create-tag
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: '1'
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref GBMConnectReleaseProject
+              InputArtifacts:
+                - Name: SourceGBMConnect

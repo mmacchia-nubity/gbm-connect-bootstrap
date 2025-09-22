@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 ENVIRONMENT=$1
@@ -16,16 +15,22 @@ fi
 
 echo "🚀 Starting bootstrap for $ENVIRONMENT environment..."
 
-# Validate templates first
-echo "🔍 Validating templates..."
+# Validate templates
 ./scripts/validate.sh
 
-# Build
-echo "🔨 Building SAM application..."
-sam build
+# Deploy buckets
+aws cloudformation deploy \
+  --template-file templates/buckets.yaml \
+  --stack-name gbm-connect-buckets-$ENVIRONMENT \
+  --capabilities CAPABILITY_NAMED_IAM
 
-# Deploy
-echo "📦 Deploying to $ENVIRONMENT..."
-sam deploy --config-file "config/samconfig-$ENVIRONMENT.toml" --config-env "$ENVIRONMENT"
-
-echo "✅ Bootstrap complete for $ENVIRONMENT environment!"
+# Deploy pipeline
+aws cloudformation deploy \
+  --template-file templates/pipelines-$ENVIRONMENT.yaml \
+  --stack-name gbm-connect-pipeline-$ENVIRONMENT \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides \
+    Environment=$ENVIRONMENT \
+    ArtifactsBucket=gbm-connect-artifacts-$ENVIRONMENT-$(aws sts get-caller-identity --query Account --output text) \
+    PipelineRoleArn=arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/gbm-connect-pipeline-$ENVIRONMENT-role \
+    BuildRoleArn=arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/gbm-connect-build-$ENVIRONMENT-role
