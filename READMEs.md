@@ -36,6 +36,7 @@ Este repositorio contiene la infraestructura **bootstrap** para los pipelines de
 - SAM CLI instalado
 - Token de GitHub almacenado en AWS Secrets Manager con el nombre `github/token`
 
+
 ## Cómo desplegar manualmente
 ```bash
 # STG
