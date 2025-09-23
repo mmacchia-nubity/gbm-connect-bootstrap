@@ -67,7 +67,7 @@ jobs:
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
               GitHubOwner=mmacchia-nubity \
-              GitHubRepo=gbm-connect-bootstrap \
+              GitHubRepo=pser-gbm-sfdc-integration \
               Environment=stg \
               ArtifactsBucket=$ARTIFACT_BUCKET \
               PipelineRoleArn=$PIPELINE_ROLE \
@@ -114,7 +114,7 @@ jobs:
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
               GitHubOwner=mmacchia-nubity \
-              GitHubRepo=gbm-connect-bootstrap \
+              GitHubRepo=pser-gbm-sfdc-integration \
               Environment=prd \
               ArtifactsBucket=$ARTIFACT_BUCKET \
               PipelineRoleArn=$PIPELINE_ROLE \
