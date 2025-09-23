@@ -8,7 +8,7 @@ Parameters:
 
   GitHubRepo:
     Type: String
-    Default: "gbm-connect-bootstrap"
+    Default: "pser-gbm-sfdc-integration"
 
   PipelineRoleArn:
     Type: String
@@ -46,7 +46,7 @@ Resources:
             Value: !Ref AWS::AccountId
       Source:
         Type: CODEPIPELINE
-        BuildSpec: buildspec.yml
+        BuildSpec: buildspec-stg.yml
       TimeoutInMinutes: 30
 
   GBMConnectReleaseProject:
@@ -84,7 +84,7 @@ Resources:
               Configuration:
                 Owner: !Ref GitHubOwner
                 Repo: !Ref GitHubRepo
-                Branch: master
+                Branch: pser-29-deploy-test #master
                 OAuthToken: "{{resolve:secretsmanager:github/token:SecretString:token}}"
               OutputArtifacts:
                 - Name: SourceGBMConnect

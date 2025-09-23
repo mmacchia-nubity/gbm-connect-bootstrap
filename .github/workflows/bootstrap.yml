@@ -1,6 +1,5 @@
 name: Bootstrap Pipelines
 
-
 on:
   push:
     branches: [main]
@@ -45,6 +44,13 @@ jobs:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-bootstrap-oidc-role
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Load STG parameters from SSM
+        run: |
+          echo "ARTIFACT_BUCKET=$(aws ssm get-parameter --name /gbm/stg/artifact-bucket --query Parameter.Value --output text)" >> $GITHUB_ENV
+          echo "PIPELINE_ROLE=$(aws ssm get-parameter --name /gbm/stg/pipeline-role --query Parameter.Value --output text)" >> $GITHUB_ENV
+          echo "BUILD_ROLE=$(aws ssm get-parameter --name /gbm/stg/build-role --query Parameter.Value --output text)" >> $GITHUB_ENV
+          echo "RELEASE_ROLE=$(aws ssm get-parameter --name /gbm/stg/release-role --query Parameter.Value --output text)" >> $GITHUB_ENV
+
       - name: Deploy buckets
         run: |
           aws cloudformation deploy \
@@ -63,10 +69,10 @@ jobs:
               GitHubOwner=mmacchia-nubity \
               GitHubRepo=gbm-connect-bootstrap \
               Environment=stg \
-              ArtifactsBucket=gbm-connect-artifacts-stg \
-              PipelineRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-pipeline-stg-role \
-              BuildRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-build-stg-role \
-              ReleaseRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-release-role
+              ArtifactsBucket=$ARTIFACT_BUCKET \
+              PipelineRoleArn=$PIPELINE_ROLE \
+              BuildRoleArn=$BUILD_ROLE \
+              ReleaseRoleArn=$RELEASE_ROLE
 
   deploy-prd:
     name: Deploy PRD
@@ -86,6 +92,12 @@ jobs:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-bootstrap-oidc-role
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Load PRD parameters from SSM
+        run: |
+          echo "ARTIFACT_BUCKET=$(aws ssm get-parameter --name /gbm/prd/artifact-bucket --query Parameter.Value --output text)" >> $GITHUB_ENV
+          echo "PIPELINE_ROLE=$(aws ssm get-parameter --name /gbm/prd/pipeline-role --query Parameter.Value --output text)" >> $GITHUB_ENV
+          echo "BUILD_ROLE=$(aws ssm get-parameter --name /gbm/prd/build-role --query Parameter.Value --output text)" >> $GITHUB_ENV
+
       - name: Deploy buckets
         run: |
           aws cloudformation deploy \
@@ -104,6 +116,6 @@ jobs:
               GitHubOwner=mmacchia-nubity \
               GitHubRepo=gbm-connect-bootstrap \
               Environment=prd \
-              ArtifactsBucket=gbm-connect-artifacts-prd \
-              PipelineRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-pipeline-prd-role \
-              BuildRoleArn=arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-build-prd-role
+              ArtifactsBucket=$ARTIFACT_BUCKET \
+              PipelineRoleArn=$PIPELINE_ROLE \
+              BuildRoleArn=$BUILD_ROLE
