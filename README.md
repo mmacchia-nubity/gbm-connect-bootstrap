@@ -13,6 +13,7 @@ aws ssm put-parameter --name "/gbm/stg/release-role" \
   --value "arn:aws:iam::825765398662:role/gbm-connect-release-role" --type String
 
 
+
 PRD
 
 aws ssm put-parameter --name "/gbm/prd/artifact-bucket" \
