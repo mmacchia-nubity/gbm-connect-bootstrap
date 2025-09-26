@@ -10,7 +10,7 @@ Resources:
   ArtifactBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "gbm-connect-artifacts-${Environment}"
+      BucketName: !Sub "gbm-connect-artifacts-${Environment}-${AWS::Region}"
       VersioningConfiguration:
         Status: Enabled
       BucketEncryption:
