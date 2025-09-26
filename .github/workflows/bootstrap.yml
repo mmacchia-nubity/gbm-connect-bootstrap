@@ -9,7 +9,6 @@ env:
   AWS_REGION: us-west-2
   AWS_ACCOUNT_ID: "825765398662"
 
-
 jobs:
   validate:
     name: Validate templates
