@@ -65,7 +65,7 @@ Resources:
               Configuration:
                 Owner: !Ref GitHubOwner
                 Repo: !Ref GitHubRepo
-                Branch: "refs/tags/*"
+                Branch: "pser-29-deploy-test"   # <<< Branch base válido
                 OAuthToken: "{{resolve:secretsmanager:github/token:SecretString:token}}"
                 PollForSourceChanges: false
               OutputArtifacts:
@@ -91,7 +91,7 @@ Resources:
         SecretToken: "{{resolve:secretsmanager:github/token:SecretString:token}}"
       Filters:
         - JsonPath: "$.ref"
-          MatchEquals: "refs/tags/*"
+          MatchEquals: "refs/tags/*"   # <<< Se dispara solo con tags
       TargetPipeline: !Ref GBMConnectPipeline
       TargetAction: source-gbm-connect
       TargetPipelineVersion: !GetAtt GBMConnectPipeline.Version
