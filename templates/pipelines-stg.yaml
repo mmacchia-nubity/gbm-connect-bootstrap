@@ -62,7 +62,7 @@ Resources:
         Image: aws/codebuild/standard:7.0
         EnvironmentVariables:
           - Name: GITHUB_TOKEN
-            Value: github/token
+            Value: github/token:token
             Type: SECRETS_MANAGER
       Source:
         Type: CODEPIPELINE
