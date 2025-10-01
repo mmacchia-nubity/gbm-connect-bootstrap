@@ -34,14 +34,6 @@ Resources:
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
 
-  AudioPromptsFolder:
-    Type: AWS::S3::Object
-    Properties:
-      Bucket: !Ref AudioBucket
-      Key: "prompts/"
-      Content: ""
-      Metadata:
-        CreatedBy: "CloudFormation"
 
 Outputs:
   ArtifactBucketName:
