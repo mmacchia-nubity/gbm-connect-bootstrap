@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: S3 Buckets for CodePipeline Artifacts
+Description: S3 Buckets for CodePipeline Artifacts and Audio Prompts
 
 Parameters:
   Environment:
@@ -18,8 +18,38 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
 
+  AudioBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "gbm-connect-audio-useast2-${Environment}"
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  AudioPromptsFolder:
+    Type: AWS::S3::Object
+    Properties:
+      Bucket: !Ref AudioBucket
+      Key: "prompts/"
+      Content: ""
+      Metadata:
+        CreatedBy: "CloudFormation"
+
 Outputs:
   ArtifactBucketName:
     Value: !Ref ArtifactBucket
     Export:
       Name: !Sub "gbm-connect-artifacts-${Environment}-name"
+
+  AudioBucketName:
+    Value: !Ref AudioBucket
+    Export:
+      Name: !Sub "gbm-connect-audio-${Environment}-name"
