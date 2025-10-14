@@ -46,11 +46,19 @@ jobs:
 
       - name: Load STG parameters from SSM
         run: |
+          set -e
+          echo "Loading parameters from SSM..."
           echo "ARTIFACT_BUCKET=$(aws ssm get-parameter --name /gbm/stg/artifact-bucket --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "PIPELINE_ROLE=$(aws ssm get-parameter --name /gbm/stg/pipeline-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "BUILD_ROLE=$(aws ssm get-parameter --name /gbm/stg/build-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "RELEASE_ROLE=$(aws ssm get-parameter --name /gbm/stg/release-role --query Parameter.Value --output text)" >> $GITHUB_ENV
-          echo "GITHUB_TOKEN=$(aws ssm get-parameter --name /gbm/github/token --with-decryption --query Parameter.Value --output text)" >> $GITHUB_ENV
+          TOKEN=$(aws ssm get-parameter --name /gbm/github/token --with-decryption --query Parameter.Value --output text --region $AWS_REGION)
+          echo "Token length: ${#TOKEN}"
+          if [ -z "$TOKEN" ]; then
+            echo "❌ ERROR: GitHub token is empty, check SSM permissions or value."
+            exit 1
+          fi
+          echo "GITHUB_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Deploy buckets
         run: |
