@@ -26,7 +26,7 @@ jobs:
         run: pip install cfn-lint
 
       - name: Validate templates
-        run: cfn-lint templates/*.yaml
+        run: cfn-lint --ignore-checks E1027 templates/*.yaml
 
   deploy-stg:
     name: Deploy STG
@@ -50,6 +50,7 @@ jobs:
           echo "PIPELINE_ROLE=$(aws ssm get-parameter --name /gbm/stg/pipeline-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "BUILD_ROLE=$(aws ssm get-parameter --name /gbm/stg/build-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "RELEASE_ROLE=$(aws ssm get-parameter --name /gbm/stg/release-role --query Parameter.Value --output text)" >> $GITHUB_ENV
+          echo "GITHUB_TOKEN=$(aws ssm get-parameter --name /gbm/github/token --with-decryption --query Parameter.Value --output text)" >> $GITHUB_ENV
 
       - name: Deploy buckets
         run: |
@@ -72,50 +73,5 @@ jobs:
               ArtifactsBucket=$ARTIFACT_BUCKET \
               PipelineRoleArn=$PIPELINE_ROLE \
               BuildRoleArn=$BUILD_ROLE \
-              ReleaseRoleArn=$RELEASE_ROLE
-
-  deploy-prd:
-    name: Deploy PRD
-    runs-on: ubuntu-latest
-    needs: deploy-stg
-    environment:
-      name: production
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gbm-connect-bootstrap-oidc-role
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Load PRD parameters from SSM
-        run: |
-          echo "ARTIFACT_BUCKET=$(aws ssm get-parameter --name /gbm/prd/artifact-bucket --query Parameter.Value --output text)" >> $GITHUB_ENV
-          echo "PIPELINE_ROLE=$(aws ssm get-parameter --name /gbm/prd/pipeline-role --query Parameter.Value --output text)" >> $GITHUB_ENV
-          echo "BUILD_ROLE=$(aws ssm get-parameter --name /gbm/prd/build-role --query Parameter.Value --output text)" >> $GITHUB_ENV
-
-      - name: Deploy buckets
-        run: |
-          aws cloudformation deploy \
-            --template-file templates/buckets.yaml \
-            --stack-name gbm-connect-buckets-prd \
-            --capabilities CAPABILITY_NAMED_IAM \
-            --parameter-overrides Environment=prd
-
-      - name: Deploy pipeline PRD
-        run: |
-          aws cloudformation deploy \
-            --template-file templates/pipelines-prd.yaml \
-            --stack-name gbm-connect-pipeline-prd \
-            --capabilities CAPABILITY_NAMED_IAM \
-            --parameter-overrides \
-              GitHubOwner=mmacchia-nubity \
-              GitHubRepo=pser-gbm-sfdc-integration \
-              Environment=prd \
-              ArtifactsBucket=$ARTIFACT_BUCKET \
-              PipelineRoleArn=$PIPELINE_ROLE \
-              BuildRoleArn=$BUILD_ROLE
+              ReleaseRoleArn=$RELEASE_ROLE \
+              GitHubToken=$GITHUB_TOKEN

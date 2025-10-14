@@ -4,27 +4,21 @@ Description: CI/CD Pipeline for GBM Connect - Staging
 Parameters:
   GitHubOwner:
     Type: String
-    Default: "mmacchia-nubity" ## Cambiar a GBM cuando se haga el fork
-
+    Default: "mmacchia-nubity"
   GitHubRepo:
     Type: String
-    Default: "pser-gbm-sfdc-integration" ## Cambiar a pser-gbm-connect cuando se haga el fork
-
+    Default: "pser-gbm-sfdc-integration"
   PipelineRoleArn:
     Type: String
-    Description: ARN of the CodePipeline service role
-
   BuildRoleArn:
     Type: String
-    Description: ARN of the CodeBuild service role
-
   ReleaseRoleArn:
     Type: String
-    Description: ARN of the CodeBuild release role
-
   ArtifactsBucket:
     Type: String
-    Description: S3 bucket for pipeline artifacts
+  GitHubToken:
+    Type: String
+    Description: Plain GitHub token read from SSM (decrypted by OIDC role)
 
 Resources:
   GBMConnectCodeBuildProject:
@@ -62,8 +56,7 @@ Resources:
         Image: aws/codebuild/standard:7.0
         EnvironmentVariables:
           - Name: GITHUB_TOKEN
-            Value: /gbm/github/token
-            Type: PARAMETER_STORE
+            Value: !Ref GitHubToken
       Source:
         Type: CODEPIPELINE
         BuildSpec: buildspec-release.yml
@@ -88,9 +81,9 @@ Resources:
               Configuration:
                 Owner: !Ref GitHubOwner
                 Repo: !Ref GitHubRepo
-                Branch: pser-29-deploy-test ##  Cambiar a master cuando se haga el PR
+                Branch: pser-29-deploy-test
                 PollForSourceChanges: false
-                OAuthToken: "{{resolve:ssm-secure:/gbm/github/token:1}}"
+                OAuthToken: !Ref GitHubToken
               OutputArtifacts:
                 - Name: SourceGBMConnect
         - Name: deploy
@@ -133,10 +126,10 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: "{{resolve:ssm-secure:/gbm/github/token:1}}"
+        SecretToken: !Ref GitHubToken
       Filters:
         - JsonPath: "$.ref"
-          MatchEquals: "refs/heads/pser-29-deploy-test"  # Cambiá si tu rama principal es 'main'
+          MatchEquals: "refs/heads/pser-29-deploy-test"
       TargetPipeline: !Ref GBMConnectPipeline
       TargetAction: source-gbm-connect
       TargetPipelineVersion: !GetAtt GBMConnectPipeline.Version
