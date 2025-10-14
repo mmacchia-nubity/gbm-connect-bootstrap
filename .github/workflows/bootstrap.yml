@@ -53,11 +53,6 @@ jobs:
           echo "BUILD_ROLE=$(aws ssm get-parameter --name /gbm/stg/build-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "RELEASE_ROLE=$(aws ssm get-parameter --name /gbm/stg/release-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           TOKEN=$(aws ssm get-parameter --name /gbm/github/token --with-decryption --query Parameter.Value --output text --region $AWS_REGION)
-          echo "Token length: ${#TOKEN}"
-          if [ -z "$TOKEN" ]; then
-            echo "❌ ERROR: GitHub token is empty, check SSM permissions or value."
-            exit 1
-          fi
           echo "GITHUB_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Deploy buckets
@@ -84,7 +79,6 @@ jobs:
               ReleaseRoleArn=$RELEASE_ROLE \
               GitHubToken=$GITHUB_TOKEN
 
-
   deploy-prd:
     name: Deploy PRD
     runs-on: ubuntu-latest
@@ -105,9 +99,14 @@ jobs:
 
       - name: Load PRD parameters from SSM
         run: |
+          set -e
+          echo "Loading parameters from SSM..."
           echo "ARTIFACT_BUCKET=$(aws ssm get-parameter --name /gbm/prd/artifact-bucket --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "PIPELINE_ROLE=$(aws ssm get-parameter --name /gbm/prd/pipeline-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "BUILD_ROLE=$(aws ssm get-parameter --name /gbm/prd/build-role --query Parameter.Value --output text)" >> $GITHUB_ENV
+          echo "RELEASE_ROLE=$(aws ssm get-parameter --name /gbm/prd/release-role --query Parameter.Value --output text)" >> $GITHUB_ENV
+          TOKEN=$(aws ssm get-parameter --name /gbm/github/token --with-decryption --query Parameter.Value --output text --region $AWS_REGION)
+          echo "GITHUB_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Deploy buckets
         run: |
@@ -129,4 +128,6 @@ jobs:
               Environment=prd \
               ArtifactsBucket=$ARTIFACT_BUCKET \
               PipelineRoleArn=$PIPELINE_ROLE \
-              BuildRoleArn=$BUILD_ROLE
+              BuildRoleArn=$BUILD_ROLE \
+              ReleaseRoleArn=$RELEASE_ROLE \
+              GitHubToken=$GITHUB_TOKEN

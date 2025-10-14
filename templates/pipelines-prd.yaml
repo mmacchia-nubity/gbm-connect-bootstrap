@@ -22,6 +22,11 @@ Parameters:
     Type: String
     Description: S3 bucket for pipeline artifacts
 
+  GitHubToken:
+    Type: String
+    NoEcho: true
+    Description: GitHub token retrieved from SSM Parameter Store (decrypted)
+
 Resources:
   GBMConnectCodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -65,8 +70,8 @@ Resources:
               Configuration:
                 Owner: !Ref GitHubOwner
                 Repo: !Ref GitHubRepo
-                Branch: "pser-29-deploy-test"   # <<< Branch base válido
-                OAuthToken: "{{resolve:secretsmanager:github/token:SecretString:token}}"
+                Branch: "pser-29-deploy-test"   # <<< Cambiar a branch principal real
+                OAuthToken: !Ref GitHubToken
                 PollForSourceChanges: false
               OutputArtifacts:
                 - Name: SourceGBMConnect
@@ -88,10 +93,10 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: "{{resolve:secretsmanager:github/token:SecretString:token}}"
+        SecretToken: !Ref GitHubToken
       Filters:
         - JsonPath: "$.ref"
-          MatchEquals: "refs/tags/*"   # <<< Se dispara solo con tags
+          MatchEquals: "refs/tags/*"   # Se dispara solo con tags
       TargetPipeline: !Ref GBMConnectPipeline
       TargetAction: source-gbm-connect
       TargetPipelineVersion: !GetAtt GBMConnectPipeline.Version
