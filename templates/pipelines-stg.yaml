@@ -4,11 +4,11 @@ Description: CI/CD Pipeline for GBM Connect - Staging
 Parameters:
   GitHubOwner:
     Type: String
-    Default: "mmacchia-nubity"
+    Default: "mmacchia-nubity" ## Cambiar a GBM cuando se haga el fork
 
   GitHubRepo:
     Type: String
-    Default: "pser-gbm-sfdc-integration"
+    Default: "pser-gbm-sfdc-integration" ## Cambiar a pser-gbm-connect cuando se haga el fork
 
   PipelineRoleArn:
     Type: String
@@ -62,8 +62,8 @@ Resources:
         Image: aws/codebuild/standard:7.0
         EnvironmentVariables:
           - Name: GITHUB_TOKEN
-            Value: github/token:token
-            Type: SECRETS_MANAGER
+            Value: /gbm/github/token
+            Type: PARAMETER_STORE
       Source:
         Type: CODEPIPELINE
         BuildSpec: buildspec-release.yml
@@ -88,8 +88,9 @@ Resources:
               Configuration:
                 Owner: !Ref GitHubOwner
                 Repo: !Ref GitHubRepo
-                Branch: pser-29-deploy-test #master
-                OAuthToken: "{{resolve:secretsmanager:github/token:SecretString:token}}"
+                Branch: pser-29-deploy-test ##  Cambiar a master cuando se haga el PR
+                PollForSourceChanges: false
+                OAuthToken: "{{resolve:ssm-secure:/gbm/github/token:1}}"
               OutputArtifacts:
                 - Name: SourceGBMConnect
         - Name: deploy
@@ -126,3 +127,17 @@ Resources:
                 ProjectName: !Ref GBMConnectReleaseProject
               InputArtifacts:
                 - Name: SourceGBMConnect
+
+  GBMConnectWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: "{{resolve:ssm-secure:/gbm/github/token:1}}"
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: "refs/heads/pser-29-deploy-test"  # Cambiá si tu rama principal es 'main'
+      TargetPipeline: !Ref GBMConnectPipeline
+      TargetAction: source-gbm-connect
+      TargetPipelineVersion: !GetAtt GBMConnectPipeline.Version
+      RegisterWithThirdParty: true

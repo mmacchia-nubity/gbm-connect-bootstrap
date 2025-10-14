@@ -4,11 +4,11 @@ Description: CI/CD Pipeline for GBM Connect - Production
 Parameters:
   GitHubOwner:
     Type: String
-    Default: "mmacchia-nubity"
+    Default: "mmacchia-nubity"  ## Cambiar a GBM cuando se haga el fork
 
   GitHubRepo:
     Type: String
-    Default: "pser-gbm-sfdc-integration"
+    Default: "pser-gbm-sfdc-integration" ## Cambiar a pser-gbm-connect cuando se haga el fork
 
   PipelineRoleArn:
     Type: String
