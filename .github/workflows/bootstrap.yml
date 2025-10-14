@@ -26,7 +26,7 @@ jobs:
         run: pip install cfn-lint
 
       - name: Validate templates
-        run: cfn-lint --ignore-checks E1027 templates/*.yaml
+        run: cfn-lint templates/*.yaml
 
   deploy-stg:
     name: Deploy STG
