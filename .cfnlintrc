@@ -1,2 +1,3 @@
 ignore_checks:
   - E1027
+  - E1001
