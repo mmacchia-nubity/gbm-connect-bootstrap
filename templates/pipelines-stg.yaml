@@ -98,7 +98,7 @@ Resources:
                 ProjectName: !Ref GBMConnectCodeBuildProject
               InputArtifacts:
                 - Name: SourceGBMConnect
-        - Name: approval
+        - Name: approval # desde aca se cambia para tags
           Actions:
             - Name: manual-approval
               ActionTypeId:
@@ -107,19 +107,8 @@ Resources:
                 Version: '1'
                 Provider: Manual
               Configuration:
-                CustomData: "Approve to create release"
-        - Name: release
-          Actions:
-            - Name: create-tag
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Version: '1'
-                Provider: CodeBuild
-              Configuration:
-                ProjectName: !Ref GBMConnectReleaseProject
-              InputArtifacts:
-                - Name: SourceGBMConnect
+                CustomData: '{"create_release": true}'
+              RunOrder: 1 # hasta aca se cambia para tags
 
   GBMConnectWebhook:
     Type: AWS::CodePipeline::Webhook

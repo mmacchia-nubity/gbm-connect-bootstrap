@@ -4,16 +4,16 @@ set -e
 ENVIRONMENT=$1
 
 if [ -z "$ENVIRONMENT" ]; then
-    echo "❌ Usage: $0 <stg|prd>"
+    echo "Usage: $0 <stg|prd>"
     exit 1
 fi
 
 if [[ "$ENVIRONMENT" != "stg" && "$ENVIRONMENT" != "prd" ]]; then
-    echo "❌ Environment must be 'stg' or 'prd'"
+    echo "Environment must be 'stg' or 'prd'"
     exit 1
 fi
 
-echo "🚀 Starting bootstrap for $ENVIRONMENT environment..."
+echo "Starting bootstrap for $ENVIRONMENT environment..."
 
 # Validate templates
 ./scripts/validate.sh

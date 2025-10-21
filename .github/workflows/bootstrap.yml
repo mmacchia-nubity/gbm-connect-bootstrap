@@ -52,7 +52,7 @@ jobs:
           echo "PIPELINE_ROLE=$(aws ssm get-parameter --name /gbm/stg/pipeline-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "BUILD_ROLE=$(aws ssm get-parameter --name /gbm/stg/build-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "RELEASE_ROLE=$(aws ssm get-parameter --name /gbm/stg/release-role --query Parameter.Value --output text)" >> $GITHUB_ENV
-          TOKEN=$(aws ssm get-parameter --name /gbm/github/token --with-decryption --query Parameter.Value --output text --region $AWS_REGION)
+          TOKEN=$(aws ssm get-parameter --name devops.github.token --with-decryption --query Parameter.Value --output text --region $AWS_REGION)
           echo "GITHUB_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Deploy buckets
@@ -105,7 +105,7 @@ jobs:
           echo "PIPELINE_ROLE=$(aws ssm get-parameter --name /gbm/prd/pipeline-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "BUILD_ROLE=$(aws ssm get-parameter --name /gbm/prd/build-role --query Parameter.Value --output text)" >> $GITHUB_ENV
           echo "RELEASE_ROLE=$(aws ssm get-parameter --name /gbm/prd/release-role --query Parameter.Value --output text)" >> $GITHUB_ENV
-          TOKEN=$(aws ssm get-parameter --name /gbm/github/token --with-decryption --query Parameter.Value --output text --region $AWS_REGION)
+          TOKEN=$(aws ssm get-parameter --name devops.github.token --with-decryption --query Parameter.Value --output text --region $AWS_REGION)
           echo "GITHUB_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Deploy buckets

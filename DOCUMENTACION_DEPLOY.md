@@ -115,7 +115,8 @@ us-east-1 → us-east-1
 useast1 → useast1
 
 # Account IDs
-825765398662 → SU_ACCOUNT_ID
+xxxxxxx → SU_ACCOUNT_ID_STG
+xxxxxxx → SU_ACCOUNT_ID_PRD
 
 # Ramas
 pser-29-deploy-test → main
