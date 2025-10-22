@@ -91,6 +91,7 @@ Resources:
   GBMConnectWebhook:
     Type: AWS::CodePipeline::Webhook
     Properties:
+      Name: gbm-connect-webhook-prd
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
         SecretToken: !Ref GitHubToken
