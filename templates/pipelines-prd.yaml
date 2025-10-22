@@ -96,9 +96,7 @@ Resources:
         SecretToken: !Ref GitHubToken
       Filters:
         - JsonPath: "$.ref"
-          MatchEquals: "refs/tags/*"
-        - JsonPath: "$.ref_type"
-          MatchEquals: "tag"
+          MatchEquals: "refs/tags/release-*"
       TargetPipeline: !Ref GBMConnectPipeline
       TargetAction: source-gbm-connect
       TargetPipelineVersion: !GetAtt GBMConnectPipeline.Version
