@@ -75,7 +75,7 @@ Resources:
                 PollForSourceChanges: false
               OutputArtifacts:
                 - Name: SourceGBMConnect
-        - Name: deploy
+        - Name: deploy-prd
           Actions:
             - Name: deploy-gbm-connect
               ActionTypeId:
